@@ -27,7 +27,7 @@
     </node> -->
 
     <node pkg="image_transport" type="republish" name="decompress_node" args="compressed">
-        <remap from ="in" to="/image_raw"/>
+        <remap from="in" to="/image_raw"/>
         <remap from="out" to="/image_decompressed"/>
     </node>
 
@@ -39,19 +39,16 @@
         <param name="image_is_rectified" value="True"/>
         <param name="marker_size"        value="$(arg markerSize)"/>
         <param name="reference_frame"    value="cm_station/base_link"/>
-        <param name="image_is_rectified" value="True"/>
         <param name="use_camera_info" value="True"/>
     </node>
 
-
-     <node pkg="image_view" type="image_view" name="image_view" output="screen">
+    <node pkg="image_view" type="image_view" name="image_view" output="screen">
         <remap from="/image" to="/aruco_marker_publisher/result" />
     </node>
 
     <!-- <node pkg="external_cams" name="cam_detections" type="visual_cam.py" output="screen"/> -->
 
 	<group ns="external">
-
         <param name="cm_station_description"
                 command="$(find xacro)/xacro '$(find cm_station_description)/robots/cm_station_default.urdf.xacro' debug:=$(arg debug) namespace:=$(arg namespace)"/>
 
@@ -81,4 +78,12 @@
         <remap from="robot_description" to="external/sam_description"/>        
     </node>
        
+    <!-- Extract relative position from the markers -->
+    <node name="relative_pose_extraction" pkg="external_cams" type="pose_extraction.py" output="screen">
+        <param name="makers_topic" value="/aruco_marker_publisher/markers"/>
+        <param name="auv_position_topic" value="/cm/auv_position"/>
+        <param name="ds_position_topic" value="/cm/ds_position"/>
+        <param name="distance_topic" value="/cm/rel_distance"/>
+        <param name="relative_pose_topic" value="/cm/relative_pose"/>
+    </node>
 </launch>
