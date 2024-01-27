@@ -38,6 +38,8 @@ class DistanceCalculation(object):
             "~relative_pose_topic", "relative_pose"
         )
 
+        self.header_frame = rospy.get_param("~reference_frame", "cm_station/uw_camera")
+
         # self.camera_frame = rospy.get_param("~base_frame_2d", "cm_station/uw_camera")
         # self.cm_base_frame = rospy.get_param("~base_frame_2d", "cm_station/uw_camera")
 
@@ -112,13 +114,13 @@ class DistanceCalculation(object):
                     marker.pose.pose.position.z
                 )
                 self.transform_stamped.transform.rotation = marker.pose.pose.orientation
-                self.transform_stamped.header.frame_id = "cm_station/base_link"
+                self.transform_stamped.header.frame_id = self.header_frame
                 self.transform_stamped.child_frame_id = self.get_marker_link(marker.id)
                 self.transform_stamped.header.stamp = rospy.Time.now()
                 self.tf_bc.sendTransform(self.transform_stamped)
 
                 # Copy detected marker into odometry message
-                self.detected_pose.header.frame_id = "cm_station/base_link"
+                self.detected_pose.header.frame_id = self.header_frame
                 self.detected_pose.child_frame_id = self.get_marker_link(marker.id)
                 self.detected_pose.header.stamp = rospy.Time.now()
                 self.detected_pose.pose = marker.pose
@@ -151,7 +153,7 @@ class DistanceCalculation(object):
                         print("Distance DS to AUV {0}".format(distance_auv_ds))
 
                         # Calculate relative pose
-                        self.relative_position.header.frame_id = "cm_station/base_link"
+                        self.relative_position.header.frame_id = self.header_frame
                         self.relative_position.child_frame_id = "relative_pose"
                         self.relative_position.header.stamp = rospy.Time.now()
                         self.relative_position.pose.pose.position.x = (
