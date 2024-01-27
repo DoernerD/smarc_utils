@@ -61,7 +61,7 @@
         <rosparam param="source_list">["command_states"]</rosparam>
     </node>
     
-    <node name="cm_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen">
+    <node name="cm_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
         <remap from="robot_description" to="external/cm_station_description"/>        
     </node>
 
@@ -73,7 +73,7 @@
         <rosparam param="source_list">["command_states"]</rosparam>
     </node>
     
-    <node name="sam_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen">
+    <node name="sam_robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
         <remap from="robot_description" to="external/sam_description"/>        
     </node>
        

@@ -50,8 +50,8 @@ class DistanceCalculation(object):
         # self.br = tf.TransformBroadcaster()
         self.transform_stamped = TransformStamped()
 
-        tf_buffer = tf2_ros.Buffer()
-        tf2_ros.TransformListener(tf_buffer)
+        self.tf_buffer = tf2_ros.Buffer()
+        tf2_ros.TransformListener(self.tf_buffer)
 
         # Init subscribers
         self.thrust_cmd_sub = rospy.Subscriber(
@@ -146,28 +146,50 @@ class DistanceCalculation(object):
                     self.auv_position_pub.publish(self.detected_pose)
                     print("AUV detected")
 
+                    relative_pose = self.tf_buffer.lookup_transform(
+                        "sam/base_link_qr",
+                        "ds/base_link",
+                        rospy.Time(0),
+                        rospy.Duration(1.0),
+                    )
+
+                    # Calculate relative pose
+                    self.relative_position.header.frame_id = "sam/base_link_qr"
+                    self.relative_position.child_frame_id = "ds/base_link"
+                    self.relative_position.header.stamp = rospy.Time.now()
+                    self.relative_position.pose.pose.position.x = (
+                        relative_pose.transform.translation.x
+                    )
+                    self.relative_position.pose.pose.position.y = (
+                        relative_pose.transform.translation.y
+                    )
+                    self.relative_position.pose.pose.position.z = (
+                        relative_pose.transform.translation.z
+                    )
+                    self.relative_position.pose.pose.orientation.x = (
+                        relative_pose.transform.rotation.x
+                    )
+                    self.relative_position.pose.pose.orientation.y = (
+                        relative_pose.transform.rotation.y
+                    )
+                    self.relative_position.pose.pose.orientation.z = (
+                        relative_pose.transform.rotation.z
+                    )
+                    self.relative_position.pose.pose.orientation.w = (
+                        relative_pose.transform.rotation.w
+                    )
+
+
+                    # Publish relative pose
+                    self.relative_pose_pub.publish(self.relative_position)
+
                     if self.auv_position.any() and self.ds_position.any():
                         distance_auv_ds = np.linalg.norm(
                             self.ds_position - self.auv_position
                         )
                         print("Distance DS to AUV {0}".format(distance_auv_ds))
 
-                        # Calculate relative pose
-                        self.relative_position.header.frame_id = self.header_frame
-                        self.relative_position.child_frame_id = "relative_pose"
-                        self.relative_position.header.stamp = rospy.Time.now()
-                        self.relative_position.pose.pose.position.x = (
-                            self.ds_position[0] - self.auv_position[0]
-                        )
-                        self.relative_position.pose.pose.position.y = (
-                            self.ds_position[1] - self.auv_position[1]
-                        )
-                        self.relative_position.pose.pose.position.z = (
-                            self.ds_position[2] - self.auv_position[2]
-                        )
-
-                        # Publish relative pose
-                        self.relative_pose_pub.publish(self.relative_position)
+                        
                         self.distance_pub.publish(distance_auv_ds)
 
     # endregion
