@@ -17,7 +17,16 @@
     <!-- <arg name="reference_frame" default="cm_station/uw_camera"/> -->
     
     <!-- TF marker to ds_base_link -->
-    <node name="cm_2_ds_helper" pkg="tf" type="static_transform_publisher" args="0 -0.25 -1.5 1.571 0 -1.571 cm_station/base_link ds/base_link_helper 100"/>
+    <!-- This chain describes the TF from cm/base_link to the ds/base_link
+        The first TF is from the cm_station/base_link to the detected aruco marker position
+        The second TF is from the marker to the position of ds/base_link, including the rotation
+        The third TF tilts the ds slightly to represent the orientation as shown in the video feed.
+        Reason: The detection doesn't detect the full square properly, which results in a rotation. This 
+                can be seen in the video, it's not a proper square as it should be. However, the 
+                position vector still works fine, as it requires less features. Thus we manually
+                do this transformation.-->
+    <node name="cm_2_ds_marker_helper" pkg="tf" type="static_transform_publisher" args="-0.04 -0.8 -1.7 0 0 0 cm_station/base_link ds/marker_link_helper 100"/>
+    <node name="ds_marker_2_ds_base_helper" pkg="tf" type="static_transform_publisher" args="-0.39 0 -0.18 1.571 0 -1.571 ds/marker_link_helper ds/base_link_helper 100"/>
     <node name="ds_helper_2_base" pkg="tf" type="static_transform_publisher" args="0 0 0 0.1745 0 0 ds/base_link_helper ds/base_link 100"/>
     
     <!-- TF marker to sam/base_link -->
